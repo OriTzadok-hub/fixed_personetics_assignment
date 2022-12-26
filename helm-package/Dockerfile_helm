@@ -1,0 +1,12 @@
+FROM ubuntu:focal
+# update
+RUN apt-get update && apt-get upgrade -y \
+&& apt-get install git curl -y
+# install helm
+RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 \
+&& chmod 700 get_helm.sh \
+&& ./get_helm.sh
+
+RUN adduser --disabled-password --uid 1000 jenkins && usermod -aG sudo jenkins
+
+USER jenkins

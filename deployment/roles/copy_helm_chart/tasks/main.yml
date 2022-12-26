@@ -1,0 +1,17 @@
+---
+# tasks file for copy_helm_chart
+- name: Create a directory if it does not exist
+  file:
+    path: "{{ project_path }}"
+    state: directory
+    mode: '0755'
+  tags:
+    - copy_helm_chart
+
+- name: Copy helm package to remote
+  copy:
+    src: "{{ helm_package }}"
+    dest: "{{ project_path }}/{{ helm_package }}"
+    mode: '0744'
+  tags:
+    - copy_helm_chart

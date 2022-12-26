@@ -1,0 +1,34 @@
+---
+- name: get kubectl
+  shell:  curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+  tags:
+    - setup_helm_kubectl
+
+- name: set execution kubectl
+  shell: chmod +x ./kubectl
+  tags:
+    - setup_helm_kubectl
+
+- name: add to path kubectl
+  shell: mv ./kubectl /usr/local/bin/kubectl
+  become: yes
+  tags:
+    - setup_helm_kubectl
+
+- name: get helm installation file
+  shell: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  tags:
+    - setup_helm_kubectl
+
+- name: set execution helm file
+  shell: chmod 700 get_helm.sh
+  tags:
+    - setup_helm_kubectl
+
+- name: install helm
+  shell: ./get_helm.sh
+  tags:
+    - setup_helm_kubectl
+
+
+

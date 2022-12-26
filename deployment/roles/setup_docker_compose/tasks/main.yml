@@ -1,0 +1,94 @@
+---
+- name: Update all packages
+  yum:
+    name: '*'
+    state: latest
+    update_only: yes
+  become: yes
+  tags:
+    - setup_docker_compose
+
+- name: Ensure a list of yum packages are installed
+  yum:
+    name: "{{ packages }}"
+    state: latest
+    update_cache: yes
+  vars:
+    packages:
+     - amazon-linux-extras
+  become: yes
+  tags:
+    - setup_docker_compose
+
+- name: Add extras repository
+  shell: yum-config-manager --enable extras
+  become: yes
+  tags:
+    - setup_docker_compose
+
+- name: Install docker via amazon-linux-extras packages
+  shell: "amazon-linux-extras install docker -y"
+  become: yes
+  tags:
+    - setup_docker_compose
+
+- name: Enable Docker CE service at startup
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  become: yes
+  tags:
+    - setup_docker_compose
+
+- name: enable docker for user
+  shell: "groupadd docker || echo 'docker group exists'"
+  become: yes
+  tags:
+    - setup_docker_compose
+
+- name: enable docker for user
+  shell: "usermod -aG docker ec2-user"
+  become: yes
+  tags:
+    - setup_docker_compose
+
+- name: get uname m
+  shell: uname -m
+  ignore_errors: yes
+  register: uname_m
+
+- name: get uname s
+  shell: uname -s
+  ignore_errors: yes
+  register: uname_s
+
+- name: Get docker-compose file
+  get_url:
+    url: "https://github.com/docker/compose/releases/latest/download/docker-compose-{{ uname_s.stdout }}-{{ uname_m.stdout }}"
+    dest: /usr/local/bin/docker-compose
+    mode: "0550"
+  become: yes
+  tags:
+    - setup_docker_compose
+
+- name: Create a symbolic link
+  file:
+    src: /usr/local/bin/docker-compose
+    dest: /usr/bin/docker-compose
+    owner: ec2-user
+    group: docker
+    state: link
+  become: yes
+  tags:
+    - setup_docker_compose
+
+- name: Reset ssh connection to allow user changes to affect 'current login user'
+  meta: reset_connection
+  tags:
+    - setup_docker_compose
+
+- name: check docker execution with local user
+  shell: docker images
+  tags:
+    - setup_docker_compose

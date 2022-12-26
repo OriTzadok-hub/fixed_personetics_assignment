@@ -1,0 +1,25 @@
+FROM jenkins/jenkins:2.350-jdk11
+ARG group_id
+# Set environment variables
+ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false
+# Neded for casc plugin to work
+ENV CASC_JENKINS_CONFIG /var/jenkins_home/casc.yaml
+# Make conf as root
+USER root
+RUN apt-get update && apt-get install -y lsb-release
+# Install docker
+RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+  https://download.docker.com/linux/debian/gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+  https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+RUN apt-get update && apt-get install -y docker-ce-cli
+# Create non privileged jenkins user
+RUN groupadd -g $group_id docker && usermod -aG docker jenkins
+USER jenkins
+# Jenkins setup install plugins
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
+# cp the casc settings to jenkins_home
+COPY jenkins_master_casc.yaml /var/jenkins_home/casc.yaml

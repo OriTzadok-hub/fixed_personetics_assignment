@@ -1,0 +1,32 @@
+---
+- name: use default compose template image variable must be defined
+  template:
+    src: docker-compose.yaml
+    dest: "{{ project_path }}/docker-compose.yaml"
+    mode: '0744'
+  when: image is defined
+  tags:
+    - deploy_compose
+- name:
+  copy:
+    src: docker-compose-start.sh
+    dest: "{{ project_path }}/docker-compose-start.sh"
+    mode: '0744'
+  tags:
+    - deploy_compose
+
+- name: Stop previous compose
+  shell: cmd="docker-compose down" chdir="{{ project_path }}"
+  tags:
+    - deploy_compose
+
+- name: Create and start services
+  shell: "./docker-compose-start.sh"
+  args:
+    executable: "/bin/bash"
+    chdir: "{{ project_path }}"
+  tags:
+    - deploy_compose
+
+
+

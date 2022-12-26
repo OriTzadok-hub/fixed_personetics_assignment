@@ -1,0 +1,7 @@
+---
+# defaults file for setup-jenkins
+project_path: "/var/lib/jenkins"
+image_tag: "jenkins:001"
+jenkins_host: "{{ ansible_host }}"
+jenkins_admin_id: admin
+jenkins_admin_password: password

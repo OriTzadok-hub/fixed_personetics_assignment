@@ -1,0 +1,56 @@
+---
+# tasks file for setup-jenkins
+- name: Copy files to remote
+  copy:
+    src: "jenkins_master/"
+    dest: "{{ project_path }}/jenkins_build"
+    mode: '0744'
+    owner: "ec2-user"
+    group: "ec2-user"
+  become: yes
+  tags:
+    - setup_jenkins
+
+- name: Creates jenkinshome
+  file:
+    path: "{{ project_path }}/jenkins_home"
+    state: directory
+    owner: "ec2-user"
+    group: "ec2-user"
+  tags:
+    - setup_jenkins
+
+- name: Copy docker-compose to remote
+  copy:
+    src: "docker-compose.yaml"
+    dest: "{{ project_path }}/docker-compose.yaml"
+    mode: '0744'
+  tags:
+    - setup_jenkins
+
+- name: Copy config to mount home
+  copy:
+    src: "jenkins_master/jenkins_master_casc.yaml"
+    dest: "{{ project_path }}/jenkins_home/casc.yaml"
+    mode: '0744'
+  tags:
+    - setup_jenkins
+
+- name: set environment
+  template:
+    src: jenkins_envs.sh.j2
+    dest: "/etc/profile.d/jenkins_envs.sh"
+    mode: '0764'
+  become: true
+  tags:
+    - setup_jenkins
+
+- name: build jenkins image
+  shell:
+  args:
+    cmd: "docker build -t {{ image_tag | quote }} --build-arg group_id=$(getent group docker | awk -F: '{print $3}') -f Dockerfile_Jenkins_Master ."
+    chdir: "{{ project_path | quote }}/jenkins_build"
+    executable: /bin/bash
+  tags:
+    - setup_jenkins
+

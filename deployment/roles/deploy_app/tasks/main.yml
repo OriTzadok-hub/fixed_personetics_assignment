@@ -1,0 +1,52 @@
+---
+# tasks file for deploy_app
+- name: configure values
+  template:
+    src: values.yaml.j2
+    dest: "{{ project_path }}/values.yaml"
+    mode: '0764'
+  tags:
+    - deploy_app
+
+- name: check if namespace exists
+  shell: "kubectl get namespace {{ project_name }}"
+  register: ns_exists
+  ignore_errors: yes
+  tags:
+    - deploy_app
+
+- name: create namespace for deployment
+  shell: "kubectl create namespace {{ project_name }}"
+  when: ns_exists.rc != 0
+  tags:
+    - deploy_app
+
+- name: helm install
+  shell:
+    cmd: "helm upgrade --install {{ project_name }}-relese -n {{ project_name }} -f values.yaml {{ helm_package }}"
+    chdir: "{{ project_path }}"
+  tags:
+    - deploy_app
+
+- name: register serrvice name
+  shell: "kubectl get svc -n {{ project_name }} -o jsonpath='{.items[0].metadata.name}'"
+  register: service_name
+  tags:
+    - deploy_app
+
+- name: register service port
+  shell:  "kubectl get svc -n {{ project_name }} -o jsonpath='{.items[0].spec.ports[0].nodePort}'"
+  register: service_node_port
+  tags:
+    - deploy_app
+
+- name: wait for open port
+  shell: "kubectl wait pods -n {{ project_name }} -l app.kubernetes.io/name=greet --for condition=Ready --timeout=30s"
+  tags:
+    - deploy_app
+
+- name: validate app is up
+  uri:
+    url: "http://localhost:{{ service_node_port.stdout }}/greeting?name={{ greeted }}"
+  tags:
+    - deploy_app

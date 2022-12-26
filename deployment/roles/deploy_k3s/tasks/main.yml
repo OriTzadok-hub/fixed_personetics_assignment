@@ -1,0 +1,48 @@
+---
+- name: install k3s
+  shell: "curl -sfL https://get.k3s.io | sh -"
+  become: yes
+  tags:
+    - deploy_k3s
+
+- name: set permissions
+  become: yes
+  shell : "chmod 755 /etc/rancher/k3s/k3s.yaml"
+  tags:
+    - deploy_k3s
+
+- name: set permissions
+  become: yes
+  shell : "chmod 755 /usr/local/bin/k3s"
+  tags:
+    - deploy_k3s
+
+- name: start k3s
+  become: yes
+  shell: "systemctl start k3s"
+  tags:
+    - deploy_k3s
+
+- name: add completion
+  shell: "k3s completion bash -i"
+  tags:
+    - deploy_k3s
+
+- name: set env kube_config
+  become: yes
+  copy:
+    src: "k3s_envs.sh"
+    dest: "/etc/profile.d/k3s_envs.sh"
+    mode: '0755'
+  tags:
+    - deploy_k3s
+
+- name: Reset ssh connection to allow user changes to affect 'current login user'
+  meta: reset_connection
+  tags:
+    - deploy_k3s
+
+- name: check kubectl cluster access
+  shell: "kubectl get ns"
+  tags:
+    - deploy_k3s

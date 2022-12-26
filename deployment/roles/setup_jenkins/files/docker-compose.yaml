@@ -1,0 +1,21 @@
+version: '3'
+services:
+  jenkins:
+    image: "${IMAGE_TAG}"
+    ports:
+      - 8080:8080
+      - 50000:50000
+    container_name: jenkins_master
+    volumes:
+      - /var/lib/jenkins/jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Xms8g -Xmx8g
+      - "JENKINS_HOST=${JENKINS_HOST}"
+      - "JENKINS_ADMIN_ID=${JENKINS_ADMIN_ID}"
+      - "JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"

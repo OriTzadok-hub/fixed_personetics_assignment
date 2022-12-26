@@ -1,0 +1,9 @@
+---
+- name: deploy k3s on remote
+  hosts: "k3s"
+  gather_facts: True
+
+  roles:
+#    - setup_docker_compose
+    - setup_helm_kubectl
+    - deploy_k3s

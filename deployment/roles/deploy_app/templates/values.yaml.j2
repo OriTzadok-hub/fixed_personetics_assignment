@@ -1,0 +1,10 @@
+replicaCount: {{ replica_count }}
+
+image:
+  repository: {{ image | regex_replace(':.*$', '') }}
+  pullPolicy: Never
+  tag: {{ image | regex_replace('[^:]+:', '')}}
+
+service:
+  type: NodePort
+  port: {{ service_port }}

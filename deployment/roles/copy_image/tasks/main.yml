@@ -1,0 +1,23 @@
+---
+- name: Create a directory if it does not exist
+  file:
+    path: "{{ project_path }}"
+    state: directory
+    mode: '0755'
+  tags:
+    - copy_image
+
+- name: Copy imge to remote
+  copy:
+    src: "{{ image }}.tar"
+    dest: "{{ project_path }}/{{ image }}.tar"
+    mode: '0744'
+  tags:
+    - copy_image
+
+- name: Load docker image to crio-engine
+  become: yes
+  shell:
+    cmd: "/usr/local/bin/k3s ctr images import {{ project_path }}/{{ image }}.tar"
+  tags:
+    - copy_image

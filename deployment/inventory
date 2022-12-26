@@ -1,0 +1,5 @@
+[jenkins]
+jenkins_master ansible_host=54.194.245.176 ansible_user=ec2-user host_key_checking=False
+
+[k3s]
+k3s ansible_host=18.203.250.24 ansible_user=ec2-user host_key_checking=False
